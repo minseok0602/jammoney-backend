@@ -32,8 +32,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/api/auth/refresh",
             // 로그아웃 계열은 멱등 처리/쿠키 삭제용으로 필터 우회
             "/api/auth/logout",
-            "/test/**",
-            "/api/auth/logout/all/**"
+            "/test/**"
     };
 
     // 경로 패턴 매칭 유틸리티
@@ -117,8 +116,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void unauthorized(HttpServletResponse res, String msg) throws IOException {
-        res.setHeader("WWW-Authenticate",
-                "Bearer error=\"invalid_token\", error_description=\"" + msg + "\"");
+        // HTTP authentication headers are ASCII; the localized message belongs in the UTF-8 body.
+        res.setHeader("WWW-Authenticate", "Bearer error=\"invalid_token\"");
         res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         res.setContentType("application/json;charset=UTF-8");
         res.getWriter().write("{\"code\":\"invalid_token\",\"message\":\"" + msg + "\"}");

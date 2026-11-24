@@ -2,6 +2,7 @@ package com.example.jammoney.auth.controller;
 
 import com.example.jammoney.auth.dto.TokenRequestDto;
 import com.example.jammoney.auth.dto.TokenResponseDto;
+import com.example.jammoney.auth.entity.CustomUserDetails;
 import com.example.jammoney.auth.jwt.JwtTokenProvider;
 import com.example.jammoney.auth.service.RefreshTokenService;
 import com.example.jammoney.exception.UserNotFoundException;
@@ -168,7 +169,12 @@ public class AuthController {
 
     /** 전체 로그아웃: 모든 refresh 삭제 + 쿠키 제거 (멱등, 204) */
     @PostMapping("/logout/all/{userId}")
-    public ResponseEntity<Void> logoutAll(@PathVariable Long userId, HttpServletResponse response) {
+    public ResponseEntity<Void> logoutAll(@PathVariable("userId") Long userId, Authentication authentication,
+                                          HttpServletResponse response) {
+        if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails details)
+                || !userId.equals(details.getUser().getId())) {
+            return ResponseEntity.status(403).build();
+        }
         refreshTokenService.invalidateAll(userId);
         clearRefreshCookie(response);
         return ResponseEntity.noContent().build(); // 204
