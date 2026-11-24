@@ -19,11 +19,11 @@
 
 | 금융 용어 단어장 | 금융 퀴즈 |
 | :---: | :---: |
-| <img src="readme-assets/vocabulary.jpg" width="330" alt="금융 용어 단어장"> | <img src="readme-assets/quiz.jpg" width="480" alt="금융 퀴즈"> |
+| <img src="readme-assets/vocabulary.jpg" width="420" alt="금융 용어 단어장"> | <img src="readme-assets/quiz.jpg" width="420" alt="금융 퀴즈"> |
 | **테마별 학습** | **데일리 뉴스** |
-| <img src="readme-assets/theme-learning.jpg" width="340" alt="테마별 학습"> | <img src="readme-assets/daily-news.jpg" width="480" alt="데일리 뉴스"> |
+| <img src="readme-assets/theme-learning.jpg" width="420" alt="테마별 학습"> | <img src="readme-assets/daily-news.jpg" width="420" alt="데일리 뉴스"> |
 | **시나리오 학습** | **모의 주식 투자** |
-| <img src="readme-assets/scenario.jpg" width="480" alt="시나리오 학습"> | <img src="readme-assets/mock-investment.jpg" width="480" alt="모의 주식 투자"> |
+| <img src="readme-assets/scenario.jpg" width="420" alt="시나리오 학습"> | <img src="readme-assets/mock-investment.jpg" width="420" alt="모의 주식 투자"> |
 
 ## ✨ 주요 기능
 
