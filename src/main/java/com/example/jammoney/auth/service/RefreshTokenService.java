@@ -52,27 +52,37 @@ public class RefreshTokenService {
         // 1) 유효성/정합성 확인
         assertTokenValid(userId, oldToken);
 
-        // 2) 기존 토큰 해시 삭제
-        String oldHash = sha256(oldToken);
-        refreshTokenRepository.deleteByUserIdAndHash(userId, oldHash);
-
-        // 3) 새 토큰 발급 (★ ver 반영)
+        // 기존 권한을 현재 버전으로 승격하지 않는다. 로그아웃과의 경합은 저장소에서도 재검사한다.
         Claims oldC = jwtTokenProvider.parseClaims(oldToken);
+        if (oldC == null || jwtTokenProvider.getTokenVersion(oldC) != ver) {
+            throw new InvalidRefreshTokenException();
+        }
         String username = jwtTokenProvider.getUsername(oldC);
         String familyId = jwtTokenProvider.getFamilyId(oldC);
         String newToken = jwtTokenProvider.generateRefreshToken(userId, username, familyId, ver);
 
-        // 4) 저장 (exp 기반 TTL 반영)
-        saveRefreshToken(userId, newToken);
+        Claims newClaims = jwtTokenProvider.parseClaims(newToken);
+        if (newClaims == null || !refreshTokenRepository.rotate(
+                userId, oldToken, newToken, calculateRemainingTime(newClaims), ver)) {
+            throw new InvalidRefreshTokenException();
+        }
 
         return newToken;
     }
 
-    /** 단일 기기 로그아웃 */
+    /** 단일 기기 로그아웃: 이미 회전된 구 RT도 같은 family의 후속 RT를 폐기할 수 있다. */
     public void invalidateOne(Long userId, String providedToken) {
-        if (providedToken == null || providedToken.isBlank()) return;
-        String hash = sha256(providedToken);
-        refreshTokenRepository.deleteByUserIdAndHash(userId, hash);
+        if (userId == null || providedToken == null || providedToken.isBlank()) return;
+        Claims claims = jwtTokenProvider.parseClaims(providedToken);
+        if (claims == null || !jwtTokenProvider.isRefreshToken(claims)
+                || !userId.equals(jwtTokenProvider.getUserId(claims))) return;
+        String familyId = jwtTokenProvider.getFamilyId(claims);
+        if (familyId == null || familyId.isBlank()) {
+            // Compatibility for legacy tokens without a family claim.
+            refreshTokenRepository.deleteByUserIdAndHash(userId, sha256(providedToken));
+            return;
+        }
+        refreshTokenRepository.revokeFamily(userId, familyId, calculateRemainingTime(claims));
     }
 
     /** 전체 로그아웃: ver++ 후 refresh 모두 삭제 (멱등) */
